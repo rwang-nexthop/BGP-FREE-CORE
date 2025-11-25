@@ -1,0 +1,319 @@
+{
+  "name": "folded-clos",
+  "type": "clab",
+  "clab": {
+    "config": {
+      "prefix": "clab",
+      "mgmt": {
+        "network": "folded-clos-mgmt",
+        "bridge": "br-627eed127fd7",
+        "ipv4-subnet": "172.40.40.0/24",
+        "ipv4-gw": "172.40.40.1",
+        "external-access": true
+      }
+    }
+  },
+  "ssh-pub-keys": ["ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJx4ss8nxPhJuDksMikd1ud8UGeQc4bw/OThKmitgatgKgA8IqfPsOI+qRBkMf3ADtZ6JzT8wAsdL14jNh9kEf0="],
+  "nodes": {
+    "LRH-Q3D-0": {
+      "index": "0",
+      "shortname": "LRH-Q3D-0",
+      "longname": "clab-folded-clos-LRH-Q3D-0",
+      "fqdn": "LRH-Q3D-0.folded-clos.io",
+      "group": "",
+      "labdir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-0",
+      "kind": "sonic-vs",
+      "image": "docker-sonic-vs:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.40.40.3",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-627eed127fd7",
+        "clab-node-group": "",
+        "clab-node-kind": "sonic-vs",
+        "clab-node-lab-dir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-0",
+        "clab-node-longname": "clab-folded-clos-LRH-Q3D-0",
+        "clab-node-name": "LRH-Q3D-0",
+        "clab-node-type": "",
+        "clab-owner": "vscode",
+        "clab-topo-file": "/Users/rwang/Python/Projects/bgp-free-core/topology/folded-clos.clab.yml",
+        "containerlab": "folded-clos"
+      },
+      "port-bindings": [
+      ]
+    },
+    "LRH-Q3D-1": {
+      "index": "1",
+      "shortname": "LRH-Q3D-1",
+      "longname": "clab-folded-clos-LRH-Q3D-1",
+      "fqdn": "LRH-Q3D-1.folded-clos.io",
+      "group": "",
+      "labdir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-1",
+      "kind": "sonic-vs",
+      "image": "docker-sonic-vs:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.40.40.2",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-627eed127fd7",
+        "clab-node-group": "",
+        "clab-node-kind": "sonic-vs",
+        "clab-node-lab-dir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-1",
+        "clab-node-longname": "clab-folded-clos-LRH-Q3D-1",
+        "clab-node-name": "LRH-Q3D-1",
+        "clab-node-type": "",
+        "clab-owner": "vscode",
+        "clab-topo-file": "/Users/rwang/Python/Projects/bgp-free-core/topology/folded-clos.clab.yml",
+        "containerlab": "folded-clos"
+      },
+      "port-bindings": [
+      ]
+    },
+    "LRH-Q3D-2": {
+      "index": "2",
+      "shortname": "LRH-Q3D-2",
+      "longname": "clab-folded-clos-LRH-Q3D-2",
+      "fqdn": "LRH-Q3D-2.folded-clos.io",
+      "group": "",
+      "labdir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-2",
+      "kind": "sonic-vs",
+      "image": "docker-sonic-vs:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.40.40.5",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-627eed127fd7",
+        "clab-node-group": "",
+        "clab-node-kind": "sonic-vs",
+        "clab-node-lab-dir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-2",
+        "clab-node-longname": "clab-folded-clos-LRH-Q3D-2",
+        "clab-node-name": "LRH-Q3D-2",
+        "clab-node-type": "",
+        "clab-owner": "vscode",
+        "clab-topo-file": "/Users/rwang/Python/Projects/bgp-free-core/topology/folded-clos.clab.yml",
+        "containerlab": "folded-clos"
+      },
+      "port-bindings": [
+      ]
+    },
+    "LRH-Q3D-3": {
+      "index": "3",
+      "shortname": "LRH-Q3D-3",
+      "longname": "clab-folded-clos-LRH-Q3D-3",
+      "fqdn": "LRH-Q3D-3.folded-clos.io",
+      "group": "",
+      "labdir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-3",
+      "kind": "sonic-vs",
+      "image": "docker-sonic-vs:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.40.40.6",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-627eed127fd7",
+        "clab-node-group": "",
+        "clab-node-kind": "sonic-vs",
+        "clab-node-lab-dir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/LRH-Q3D-3",
+        "clab-node-longname": "clab-folded-clos-LRH-Q3D-3",
+        "clab-node-name": "LRH-Q3D-3",
+        "clab-node-type": "",
+        "clab-owner": "vscode",
+        "clab-topo-file": "/Users/rwang/Python/Projects/bgp-free-core/topology/folded-clos.clab.yml",
+        "containerlab": "folded-clos"
+      },
+      "port-bindings": [
+      ]
+    },
+    "URH-TH5-0": {
+      "index": "4",
+      "shortname": "URH-TH5-0",
+      "longname": "clab-folded-clos-URH-TH5-0",
+      "fqdn": "URH-TH5-0.folded-clos.io",
+      "group": "",
+      "labdir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/URH-TH5-0",
+      "kind": "sonic-vs",
+      "image": "docker-sonic-vs:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.40.40.7",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-627eed127fd7",
+        "clab-node-group": "",
+        "clab-node-kind": "sonic-vs",
+        "clab-node-lab-dir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/URH-TH5-0",
+        "clab-node-longname": "clab-folded-clos-URH-TH5-0",
+        "clab-node-name": "URH-TH5-0",
+        "clab-node-type": "",
+        "clab-owner": "vscode",
+        "clab-topo-file": "/Users/rwang/Python/Projects/bgp-free-core/topology/folded-clos.clab.yml",
+        "containerlab": "folded-clos"
+      },
+      "port-bindings": [
+      ]
+    },
+    "URH-TH5-1": {
+      "index": "5",
+      "shortname": "URH-TH5-1",
+      "longname": "clab-folded-clos-URH-TH5-1",
+      "fqdn": "URH-TH5-1.folded-clos.io",
+      "group": "",
+      "labdir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/URH-TH5-1",
+      "kind": "sonic-vs",
+      "image": "docker-sonic-vs:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.40.40.4",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-627eed127fd7",
+        "clab-node-group": "",
+        "clab-node-kind": "sonic-vs",
+        "clab-node-lab-dir": "/Users/rwang/Python/Projects/bgp-free-core/topology/clab-folded-clos/URH-TH5-1",
+        "clab-node-longname": "clab-folded-clos-URH-TH5-1",
+        "clab-node-name": "URH-TH5-1",
+        "clab-node-type": "",
+        "clab-owner": "vscode",
+        "clab-topo-file": "/Users/rwang/Python/Projects/bgp-free-core/topology/folded-clos.clab.yml",
+        "containerlab": "folded-clos"
+      },
+      "port-bindings": [
+      ]
+    }
+  },
+  "links": [
+    {
+      "a": {
+        "node": "URH-TH5-0",
+        "interface": "eth1",
+        "mac": "aa:c1:ab:d4:21:54",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-0",
+        "interface": "eth1",
+        "mac": "aa:c1:ab:69:80:8b",
+        "peer": "a"
+      }
+    },
+    {
+      "a": {
+        "node": "URH-TH5-0",
+        "interface": "eth2",
+        "mac": "aa:c1:ab:ff:14:f0",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-1",
+        "interface": "eth1",
+        "mac": "aa:c1:ab:93:cc:c1",
+        "peer": "a"
+      }
+    },
+    {
+      "a": {
+        "node": "URH-TH5-0",
+        "interface": "eth3",
+        "mac": "aa:c1:ab:ef:2f:a4",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-2",
+        "interface": "eth1",
+        "mac": "aa:c1:ab:0f:67:28",
+        "peer": "a"
+      }
+    },
+    {
+      "a": {
+        "node": "URH-TH5-0",
+        "interface": "eth4",
+        "mac": "aa:c1:ab:fc:1f:b6",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-3",
+        "interface": "eth1",
+        "mac": "aa:c1:ab:a1:d3:65",
+        "peer": "a"
+      }
+    },
+    {
+      "a": {
+        "node": "URH-TH5-1",
+        "interface": "eth1",
+        "mac": "aa:c1:ab:3f:8e:2a",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-0",
+        "interface": "eth2",
+        "mac": "aa:c1:ab:34:8d:b5",
+        "peer": "a"
+      }
+    },
+    {
+      "a": {
+        "node": "URH-TH5-1",
+        "interface": "eth2",
+        "mac": "aa:c1:ab:a5:97:2a",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-1",
+        "interface": "eth2",
+        "mac": "aa:c1:ab:1a:c8:30",
+        "peer": "a"
+      }
+    },
+    {
+      "a": {
+        "node": "URH-TH5-1",
+        "interface": "eth3",
+        "mac": "aa:c1:ab:92:1d:d3",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-2",
+        "interface": "eth2",
+        "mac": "aa:c1:ab:58:ad:98",
+        "peer": "a"
+      }
+    },
+    {
+      "a": {
+        "node": "URH-TH5-1",
+        "interface": "eth4",
+        "mac": "aa:c1:ab:be:0e:30",
+        "peer": "z"
+      },
+      "z": {
+        "node": "LRH-Q3D-3",
+        "interface": "eth2",
+        "mac": "aa:c1:ab:b2:94:61",
+        "peer": "a"
+      }
+    }
+  ]
+}
