@@ -8,6 +8,17 @@ A folded clos network topology with 6 SONiC nodes:
 
 Each leaf is connected to both spines (full mesh), creating a folded clos architecture.
 
+## Topology Diagram
+
+```
+        URH-TH5-0          URH-TH5-1
+        (Spine 0)          (Spine 1)
+           |  |  |  |         |  |  |  |
+           |  |  |  |         |  |  |  |
+        LRH-Q3D-0  LRH-Q3D-1  LRH-Q3D-2  LRH-Q3D-3
+        (Leaf 0)   (Leaf 1)   (Leaf 2)   (Leaf 3)
+```
+
 ## IP Addressing
 
 ### Spine-Leaf Links
