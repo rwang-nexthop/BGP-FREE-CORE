@@ -8,14 +8,14 @@ all:
     sonic-vs:
       hosts:
         clab-folded-clos-LRH-Q3D-0:
-          ansible_host: 172.40.40.3
+          ansible_host: 172.40.40.4
         clab-folded-clos-LRH-Q3D-1:
           ansible_host: 172.40.40.2
         clab-folded-clos-LRH-Q3D-2:
           ansible_host: 172.40.40.5
         clab-folded-clos-LRH-Q3D-3:
-          ansible_host: 172.40.40.6
-        clab-folded-clos-URH-TH5-0:
           ansible_host: 172.40.40.7
+        clab-folded-clos-URH-TH5-0:
+          ansible_host: 172.40.40.6
         clab-folded-clos-URH-TH5-1:
-          ansible_host: 172.40.40.4
+          ansible_host: 172.40.40.3
