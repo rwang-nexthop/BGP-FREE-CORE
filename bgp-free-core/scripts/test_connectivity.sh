@@ -70,20 +70,34 @@ echo -e "${BLUE}Test 2: BGP Session Status${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════════════════════${NC}"
 echo ""
 
-echo -e "${YELLOW}Spine 0 BGP Summary:${NC}"
-docker exec clab-folded-clos-URH-TH5-0 vtysh -c "show ip bgp summary" 2>/dev/null | head -20
+echo -e "${YELLOW}Spine 0 (URH-TH5-0) BGP Summary:${NC}"
+echo "Neighbors: 10.0.0.1 (Leaf 0), 10.0.1.1 (Leaf 1), 10.0.2.1 (Leaf 2), 10.0.3.1 (Leaf 3)"
+docker exec clab-folded-clos-URH-TH5-0 vtysh -c "show ip bgp summary" 2>/dev/null
 echo ""
 
-echo -e "${YELLOW}Spine 1 BGP Summary:${NC}"
-docker exec clab-folded-clos-URH-TH5-1 vtysh -c "show ip bgp summary" 2>/dev/null | head -20
+echo -e "${YELLOW}Spine 1 (URH-TH5-1) BGP Summary:${NC}"
+echo "Neighbors: 10.0.0.3 (Leaf 0), 10.0.1.3 (Leaf 1), 10.0.2.3 (Leaf 2), 10.0.3.3 (Leaf 3)"
+docker exec clab-folded-clos-URH-TH5-1 vtysh -c "show ip bgp summary" 2>/dev/null
 echo ""
 
-echo -e "${YELLOW}Leaf 0 BGP Summary:${NC}"
-docker exec clab-folded-clos-LRH-Q3D-0 vtysh -c "show ip bgp summary" 2>/dev/null | head -20
+echo -e "${YELLOW}Leaf 0 (LRH-Q3D-0) BGP Summary:${NC}"
+echo "Neighbors: 10.0.0.0 (Spine 0), 10.0.0.2 (Spine 1) | Connected to: host1 (eth1)"
+docker exec clab-folded-clos-LRH-Q3D-0 vtysh -c "show ip bgp summary" 2>/dev/null
 echo ""
 
-echo -e "${YELLOW}Leaf 1 BGP Summary:${NC}"
-docker exec clab-folded-clos-LRH-Q3D-1 vtysh -c "show ip bgp summary" 2>/dev/null | head -20
+echo -e "${YELLOW}Leaf 1 (LRH-Q3D-1) BGP Summary:${NC}"
+echo "Neighbors: 10.0.1.0 (Spine 0), 10.0.1.2 (Spine 1) | Connected to: host1 (eth2)"
+docker exec clab-folded-clos-LRH-Q3D-1 vtysh -c "show ip bgp summary" 2>/dev/null
+echo ""
+
+echo -e "${YELLOW}Leaf 2 (LRH-Q3D-2) BGP Summary:${NC}"
+echo "Neighbors: 10.0.2.0 (Spine 0), 10.0.2.2 (Spine 1) | Connected to: host2 (eth1)"
+docker exec clab-folded-clos-LRH-Q3D-2 vtysh -c "show ip bgp summary" 2>/dev/null
+echo ""
+
+echo -e "${YELLOW}Leaf 3 (LRH-Q3D-3) BGP Summary:${NC}"
+echo "Neighbors: 10.0.3.0 (Spine 0), 10.0.3.2 (Spine 1) | Connected to: host2 (eth2)"
+docker exec clab-folded-clos-LRH-Q3D-3 vtysh -c "show ip bgp summary" 2>/dev/null
 echo ""
 
 # Test 3: Leaf-to-Leaf Direct Interface Connectivity

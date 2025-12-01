@@ -1,8 +1,10 @@
 # Topology Name: folded-clos
-# Description: A folded clos network topology with 6 SONiC nodes
+# Description: A folded clos network topology with 6 SONiC nodes and 2 host nodes
 #              - 4 leaf nodes (LRH-Q3D-0, LRH-Q3D-1, LRH-Q3D-2, LRH-Q3D-3)
 #              - 2 spine nodes (URH-TH5-0, URH-TH5-1)
+#              - 2 host nodes (host1 connected to Q3D-0 & Q3D-1, host2 connected to Q3D-2 & Q3D-3)
 #              Each leaf is connected to both spines (full mesh)
+#              VXLAN tunnel established between host1 and host2
 #
 name: folded-clos
 
@@ -15,7 +17,7 @@ topology:
     sonic-vs:
       image: docker-sonic-vs:latest
     linux:
-      image: ghcr.io/srl-labs/alpine:latest
+      image: wbitt/network-multitool:alpine-minimal
 
   nodes:
     # Leaf nodes (Level 0)
@@ -44,6 +46,15 @@ topology:
       kind: sonic-vs
       type: ""
 
+    # Host nodes for VXLAN testing
+    host1:
+      kind: linux
+      type: ""
+
+    host2:
+      kind: linux
+      type: ""
+
   links:
     # Spine 0 connections to all leaves
     - endpoints: ["URH-TH5-0:eth1", "LRH-Q3D-0:eth1"]
@@ -56,4 +67,10 @@ topology:
     - endpoints: ["URH-TH5-1:eth2", "LRH-Q3D-1:eth2"]
     - endpoints: ["URH-TH5-1:eth3", "LRH-Q3D-2:eth2"]
     - endpoints: ["URH-TH5-1:eth4", "LRH-Q3D-3:eth2"]
+
+    # Host connections
+    - endpoints: ["host1:eth1", "LRH-Q3D-0:eth3"]
+    - endpoints: ["host1:eth2", "LRH-Q3D-1:eth3"]
+    - endpoints: ["host2:eth1", "LRH-Q3D-2:eth3"]
+    - endpoints: ["host2:eth2", "LRH-Q3D-3:eth3"]
 
