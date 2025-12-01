@@ -12,11 +12,13 @@ This directory contains scripts to set up and test a VXLAN point-to-point tunnel
 
 - **VXLAN Network Identifier (VNI):** 100
 - **UDP Port:** 4789 (standard VXLAN port)
-- **Source Node:** host1 (VTEP IP: 192.168.1.1)
-- **Destination Node:** host2 (VTEP IP: 192.168.1.2)
+- **VTEP Endpoints:**
+  - host1 VTEP IP: 192.168.1.10 (local IP on eth1)
+  - host2 VTEP IP: 192.168.2.10 (local IP on eth1)
 - **Bridge Network:** 10.0.100.0/24
-  - host1 Bridge IP: 10.0.100.1/24
-  - host2 Bridge IP: 10.0.100.2/24
+  - host1 Bridge IP: 10.0.100.1/24 (on eth2)
+  - host2 Bridge IP: 10.0.100.2/24 (on eth2)
+- **Encapsulation:** UDP packets with VXLAN header, routed through folded CLOS network
 
 ## Scripts
 
@@ -94,23 +96,53 @@ This deploys:
 ## VXLAN Architecture
 
 ```
-host1 (192.168.1.1)                    host2 (192.168.1.2)
+host1 (192.168.1.10)                   host2 (192.168.2.10)
     │                                       │
-    ├─ vxlan100 ◄──────────────────────► vxlan100
-    │   (VNI: 100, UDP 4789)                │
+    ├─ eth1: 192.168.1.10/24 ──────────────┼─ eth1: 192.168.2.10/24
+    │   (Network connectivity)              │   (Network connectivity)
     │                                       │
-    ├─ br100 ◄──────────────────────────► br100
-    │   10.0.100.1/24                       10.0.100.2/24
+    ├─ eth2: 10.0.100.1/24 ◄─────────────┐ ├─ eth2: 10.0.100.2/24
+    │   (VXLAN bridge)                   │ │   (VXLAN bridge)
+    │                                    │ │
+    ├─ vxlan100 ◄──────────────────────┤─┤─► vxlan100
+    │   (VNI: 100, UDP 4789)            │ │   (VNI: 100, UDP 4789)
+    │   VTEP: 192.168.1.10              │ │   VTEP: 192.168.2.10
+    │                                    │ │
+    ├─ br100 ◄──────────────────────────┘ ├─ br100
+    │   (Layer 2 bridge)                   │   (Layer 2 bridge)
     │                                       │
-    ├─ eth1 ──► LRH-Q3D-0                  ├─ eth1 ──► LRH-Q3D-2
-    │           (Spine 0 & 1)              │           (Spine 0 & 1)
+    ├─ LRH-Q3D-0 (Leaf 0)                 ├─ LRH-Q3D-2 (Leaf 2)
+    │   192.168.1.1/24                    │   192.168.2.1/24
     │                                       │
-    └─ eth2 ──► LRH-Q3D-1                  └─ eth2 ──► LRH-Q3D-3
-                (Redundant)                             (Redundant)
+    └─ LRH-Q3D-1 (Leaf 1)                 └─ LRH-Q3D-3 (Leaf 3)
+        192.168.1.1/24                        192.168.2.1/24
+        (Redundant)                           (Redundant)
 ```
 
-**Underlay Network:** SONiC leaf nodes provide connectivity between host1 and host2 via spine nodes
-**Overlay Network:** VXLAN tunnel encapsulates traffic between hosts
+**Underlay Network:** BGP-routed folded CLOS network (192.168.x.x) provides connectivity between VTEP endpoints
+**Overlay Network:** VXLAN tunnel (10.0.100.0/24) encapsulates Layer 2 traffic between hosts
+**Key Difference:** eth1 carries underlay traffic, eth2 carries overlay traffic (no conflicts)
+
+## Expected Behavior
+
+### Ping vs Traceroute on VXLAN
+
+**Ping (ICMP Echo):** ✅ Works
+- Ping packets are delivered directly through the VXLAN bridge
+- Response comes back through the tunnel
+- Example: `ping 10.0.100.2` from host1 succeeds
+
+**Traceroute (ICMP TTL Exceeded):** Shows "1" with no response (Normal)
+- Traceroute relies on intermediate routers to decrement TTL and send "TTL Exceeded" messages
+- The VXLAN bridge is a Layer 2 device, not a Layer 3 router
+- Since both hosts are on the same Layer 2 network (10.0.100.0/24), packets reach the destination directly
+- No intermediate hops exist from the bridge's perspective
+- No "TTL Exceeded" message is generated
+- This is **completely normal and expected** for any Layer 2 bridge or switch
+
+**IP Routing (via 192.168.x.x):** Shows multiple hops
+- When pinging through the underlay network (e.g., `ping 192.168.2.10`), traceroute shows multiple hops
+- This is because IP routing involves Layer 3 routers that decrement TTL
 
 ## Manual Verification Commands
 

@@ -2,11 +2,12 @@
 
 ## Overview
 
-A folded clos network topology with 6 SONiC nodes:
+A folded CLOS network topology with 6 SONiC nodes and 2 Linux host nodes for testing:
 - **4 Leaf nodes** (Level 0): LRH-Q3D-0, LRH-Q3D-1, LRH-Q3D-2, LRH-Q3D-3
 - **2 Spine nodes** (Level 1): URH-TH5-0, URH-TH5-1
+- **2 Host nodes**: host1 (connected to Leaf 0 & 1), host2 (connected to Leaf 2 & 3)
 
-Each leaf is connected to both spines (full mesh), creating a folded clos architecture.
+Each leaf is connected to both spines (full mesh), creating a folded CLOS architecture. Host nodes provide endpoints for testing IP connectivity and VXLAN tunneling.
 
 ## Topology Diagram
 
@@ -40,6 +41,23 @@ Each leaf is connected to both spines (full mesh), creating a folded clos archit
 - LRH-Q3D-2: 12.12.12.12/32
 - LRH-Q3D-3: 13.13.13.13/32
 
+### Host Addresses
+- **host1** (connected to Leaf 0 & 1):
+  - eth1: 192.168.1.10/24 (network connectivity)
+  - eth2: 10.0.100.1/24 (VXLAN bridge)
+  - Default route: via 192.168.1.1 (Leaf 0)
+
+- **host2** (connected to Leaf 2 & 3):
+  - eth1: 192.168.2.10/24 (network connectivity)
+  - eth2: 10.0.100.2/24 (VXLAN bridge)
+  - Default route: via 192.168.2.1 (Leaf 2)
+
+### Leaf-to-Host Links
+- Leaf 0 (Ethernet8): 192.168.1.1/24 ↔ host1 eth1
+- Leaf 1 (Ethernet8): 192.168.1.1/24 ↔ host1 eth2
+- Leaf 2 (Ethernet8): 192.168.2.1/24 ↔ host2 eth1
+- Leaf 3 (Ethernet8): 192.168.2.1/24 ↔ host2 eth2
+
 ## BGP Configuration
 
 ### Spine Routers
@@ -70,30 +88,65 @@ cd ~/Python/Projects/bgp-free-core/scripts
 The script will:
 1. Check Docker connectivity
 2. Bring up eth interfaces
-3. Configure IP addresses
-4. Enable BGP daemon
-5. Configure BGP on all nodes
-6. Wait for BGP sessions to establish
-7. Verify BGP status
-8. Test connectivity
+3. Configure IP addresses on all nodes
+4. Configure host IP addresses and default routes
+5. Enable BGP daemon on all containers
+6. Configure BGP on spine routers
+7. Configure BGP on leaf routers
+8. Wait for BGP configuration to be applied (5 seconds)
+9. Wait for BGP convergence (30 seconds) - **allows full route distribution**
+10. Verify BGP status on all nodes
+11. Test connectivity between nodes and hosts
+
+**Note:** The script now runs successfully in a single execution. BGP routes are fully distributed after the 30-second convergence wait.
 
 ## Verification
 
-### Check BGP Status
+### Automated Testing
 ```bash
+cd ~/Python/Projects/bgp-free-core/scripts
+./test_connectivity.sh
+```
+
+This comprehensive test script verifies:
+- Direct link connectivity (8 spine-leaf links)
+- BGP session status on all nodes
+- Loopback connectivity via BGP routes
+- Routing tables on all nodes
+- BGP routes learned
+- Host-to-host connectivity
+
+### Manual BGP Verification
+```bash
+# Check BGP status on spine
 docker exec clab-folded-clos-URH-TH5-0 vtysh -c "show ip bgp summary"
+
+# Check BGP status on leaf
 docker exec clab-folded-clos-LRH-Q3D-0 vtysh -c "show ip bgp summary"
-```
 
-### Check Routes
-```bash
+# Check routes
 docker exec clab-folded-clos-LRH-Q3D-0 vtysh -c "show ip route"
+
+# Check BGP routes
+docker exec clab-folded-clos-LRH-Q3D-0 vtysh -c "show ip bgp"
 ```
 
-### Test Connectivity
+### Manual Connectivity Tests
 ```bash
+# Test leaf-to-leaf connectivity
 docker exec clab-folded-clos-LRH-Q3D-0 ping 10.0.1.1
 docker exec clab-folded-clos-LRH-Q3D-0 ping 10.0.2.1
+
+# Test host-to-host connectivity
+docker exec clab-folded-clos-host1 ping 192.168.2.10
+docker exec clab-folded-clos-host2 ping 192.168.1.10
+```
+
+### VXLAN Testing
+```bash
+cd ~/Python/Projects/bgp-free-core/scripts
+./VXLAN_setup.sh    # Setup VXLAN tunnel
+./VXLAN_proof.sh    # Verify VXLAN connectivity
 ```
 
 ## Cleanup
@@ -105,7 +158,55 @@ containerlab destroy -t folded-clos.clab.yml
 
 ## Files
 
-- **Topology**: `topology/folded-clos.clab.yml`
-- **Configuration Script**: `scripts/configure_folded_clos.sh`
-- **Documentation**: `README.md`
+### Topology
+- `topology/folded-clos.clab.yml` - Containerlab topology definition with 6 SONiC nodes and 2 host nodes
+
+### Configuration & Testing Scripts
+- `scripts/configure_folded_clos.sh` - Complete BGP and IP configuration (runs in single execution)
+- `scripts/test_connectivity.sh` - Comprehensive connectivity testing
+- `scripts/VXLAN_setup.sh` - VXLAN tunnel configuration between hosts
+- `scripts/VXLAN_proof.sh` - VXLAN tunnel verification with 20 comprehensive tests
+
+### Documentation
+- `README.md` - This file (main documentation)
+- `TEST_COMMANDS.md` - Manual test commands and troubleshooting
+- `scripts/VXLAN_README.md` - VXLAN-specific documentation
+
+## Key Features
+
+### BGP Configuration
+- ✅ Automatic BGP setup on all nodes
+- ✅ Proper timing for route convergence (30-second wait)
+- ✅ BGP neighbor descriptions for easy identification
+- ✅ Single-run execution (no need to run twice)
+
+### Host Connectivity
+- ✅ Host-to-host IP connectivity through folded CLOS network
+- ✅ Redundant connections (each host connected to 2 leaves)
+- ✅ Default route configuration for proper routing
+
+### VXLAN Overlay
+- ✅ Point-to-point VXLAN tunnel between hosts
+- ✅ Separate interfaces for network and VXLAN traffic
+- ✅ Comprehensive verification tests
+- ✅ MAC learning and FDB verification
+
+## Troubleshooting
+
+### BGP Routes Not Distributed
+- Ensure `configure_folded_clos.sh` completes fully (takes ~2 minutes)
+- Check BGP status: `docker exec clab-folded-clos-URH-TH5-0 vtysh -c "show ip bgp summary"`
+- Verify FRR daemon is running: `docker exec clab-folded-clos-URH-TH5-0 service frr status`
+
+### Host Connectivity Issues
+- Verify host IPs are configured: `docker exec clab-folded-clos-host1 ip addr show`
+- Check default routes: `docker exec clab-folded-clos-host1 ip route show`
+- Test leaf connectivity: `docker exec clab-folded-clos-host1 ping 192.168.1.1`
+
+### VXLAN Tunnel Not Working
+- Verify underlay connectivity: `docker exec clab-folded-clos-host1 ping 192.168.2.10`
+- Check VXLAN interface: `docker exec clab-folded-clos-host1 ip link show vxlan100`
+- Verify bridge configuration: `docker exec clab-folded-clos-host1 brctl show br100`
+
+See `TEST_COMMANDS.md` for more detailed troubleshooting steps.
 
