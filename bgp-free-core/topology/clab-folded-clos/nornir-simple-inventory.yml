@@ -3,22 +3,22 @@ host1:
     username: 
     password: 
     platform: linux
-    hostname: 172.40.40.8
+    hostname: 172.40.40.9
 host2:
     username: 
     password: 
     platform: linux
-    hostname: 172.40.40.5
+    hostname: 172.40.40.7
 LRH-Q3D-0:
     username: 
     password: 
     platform: sonic-vs
-    hostname: 172.40.40.7
+    hostname: 172.40.40.6
 LRH-Q3D-1:
     username: 
     password: 
     platform: sonic-vs
-    hostname: 172.40.40.2
+    hostname: 172.40.40.3
 LRH-Q3D-2:
     username: 
     password: 
@@ -28,14 +28,14 @@ LRH-Q3D-3:
     username: 
     password: 
     platform: sonic-vs
-    hostname: 172.40.40.3
+    hostname: 172.40.40.2
 URH-TH5-0:
     username: 
     password: 
     platform: sonic-vs
-    hostname: 172.40.40.6
+    hostname: 172.40.40.8
 URH-TH5-1:
     username: 
     password: 
     platform: sonic-vs
-    hostname: 172.40.40.9
+    hostname: 172.40.40.5
