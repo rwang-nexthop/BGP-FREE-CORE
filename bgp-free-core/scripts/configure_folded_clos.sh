@@ -83,7 +83,6 @@ configure_leaf_bgp() {
     local router_id=""
     local neighbor1=""
     local neighbor2=""
-    local host_network=""
 
     if [ "$container_name" == "clab-folded-clos-LRH-Q3D-0" ]; then
         router_id="10.10.10.10"
@@ -91,28 +90,24 @@ configure_leaf_bgp() {
         neighbor2="10.0.0.2"  # spine1
         neighbor1_desc="URH-TH5-0"
         neighbor2_desc="URH-TH5-1"
-        host_network="192.168.1.0/24"  # host1 network
     elif [ "$container_name" == "clab-folded-clos-LRH-Q3D-1" ]; then
         router_id="11.11.11.11"
         neighbor1="10.0.1.0"  # spine0
         neighbor2="10.0.1.2"  # spine1
         neighbor1_desc="URH-TH5-0"
         neighbor2_desc="URH-TH5-1"
-        host_network="192.168.1.0/24"  # host1 network
     elif [ "$container_name" == "clab-folded-clos-LRH-Q3D-2" ]; then
         router_id="12.12.12.12"
         neighbor1="10.0.2.0"  # spine0
         neighbor2="10.0.2.2"  # spine1
         neighbor1_desc="URH-TH5-0"
         neighbor2_desc="URH-TH5-1"
-        host_network="192.168.2.0/24"  # host2 network
     else
         router_id="13.13.13.13"
         neighbor1="10.0.3.0"  # spine0
         neighbor2="10.0.3.2"  # spine1
         neighbor1_desc="URH-TH5-0"
         neighbor2_desc="URH-TH5-1"
-        host_network="192.168.2.0/24"  # host2 network
     fi
 
     echo "Configuring BGP on $container_name (AS $asn)..."
@@ -130,7 +125,6 @@ configure_leaf_bgp() {
         -c "neighbor $neighbor1 activate" \
         -c "neighbor $neighbor2 activate" \
         -c "network $router_id/32" \
-        -c "network $host_network" \
         -c "redistribute connected" \
         -c "exit-address-family" \
         -c "exit" 2>&1 | grep -v "Unknown command" || true
@@ -181,18 +175,13 @@ for i in 0 1; do
     done
 done
 
-# Leaf nodes (eth1-eth3 for 2 spine connections + 1 host connection each)
+# Leaf nodes (eth1-eth4 for 2 spine connections + 2 VXLAN tunnel connections)
 for i in 0 1 2 3; do
     docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth1 up
     docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth2 up
     docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth3 up
+    docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth4 up
 done
-
-# Host nodes (eth1 and eth2 for redundant connections)
-docker exec clab-folded-clos-host1 ip link set eth1 up
-docker exec clab-folded-clos-host1 ip link set eth2 up
-docker exec clab-folded-clos-host2 ip link set eth1 up
-docker exec clab-folded-clos-host2 ip link set eth2 up
 
 echo -e "${GREEN}✓ All eth interfaces are up${NC}"
 sleep 2
@@ -224,65 +213,40 @@ docker exec clab-folded-clos-URH-TH5-1 config interface ip add Ethernet12 10.0.3
 docker exec clab-folded-clos-URH-TH5-1 config interface startup Ethernet12 2>/dev/null || true
 docker exec clab-folded-clos-URH-TH5-1 config interface ip add Loopback0 2.2.2.2/32 2>/dev/null || true
 
-# Leaf 0 interfaces (connected to host1 via eth3)
+# Leaf 0 interfaces (VXLAN tunnels via eth3 and eth4)
 docker exec clab-folded-clos-LRH-Q3D-0 config interface ip add Ethernet0 10.0.0.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface ip add Ethernet4 10.0.0.3/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface startup Ethernet4 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-0 config interface ip add Ethernet8 192.168.1.1/24 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-0 config interface startup Ethernet8 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface ip add Loopback0 10.10.10.10/32 2>/dev/null || true
 
-# Leaf 1 interfaces (redundant connection to host1 via eth3)
+# Leaf 1 interfaces (VXLAN tunnels via eth3 and eth4)
 docker exec clab-folded-clos-LRH-Q3D-1 config interface ip add Ethernet0 10.0.1.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface ip add Ethernet4 10.0.1.3/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface startup Ethernet4 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-1 config interface ip add Ethernet8 192.168.1.1/24 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-1 config interface startup Ethernet8 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface ip add Loopback0 11.11.11.11/32 2>/dev/null || true
 
-# Leaf 2 interfaces (connected to host2 via eth3)
+# Leaf 2 interfaces (VXLAN tunnels via eth3 and eth4)
 docker exec clab-folded-clos-LRH-Q3D-2 config interface ip add Ethernet0 10.0.2.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface ip add Ethernet4 10.0.2.3/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface startup Ethernet4 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-2 config interface ip add Ethernet8 192.168.2.1/24 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-2 config interface startup Ethernet8 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface ip add Loopback0 12.12.12.12/32 2>/dev/null || true
 
-# Leaf 3 interfaces (redundant connection to host2 via eth3)
+# Leaf 3 interfaces (VXLAN tunnels via eth3 and eth4)
 docker exec clab-folded-clos-LRH-Q3D-3 config interface ip add Ethernet0 10.0.3.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-3 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-3 config interface ip add Ethernet4 10.0.3.3/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-3 config interface startup Ethernet4 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-3 config interface ip add Ethernet8 192.168.2.1/24 2>/dev/null || true
-docker exec clab-folded-clos-LRH-Q3D-3 config interface startup Ethernet8 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-3 config interface ip add Loopback0 13.13.13.13/32 2>/dev/null || true
 
 echo -e "${GREEN}✓ All interfaces configured${NC}"
 sleep 5
 echo ""
 
-# Step 3: Configure host IP addresses and default routes
-echo -e "${BLUE}Step 3: Configuring host IP addresses and default routes...${NC}"
-echo "-----------------------------------------------------------"
-
-# Host1 configuration (connected to Q3D-0 and Q3D-1)
-docker exec clab-folded-clos-host1 ip addr add 192.168.1.10/24 dev eth1 2>/dev/null || true
-docker exec clab-folded-clos-host1 ip route del default via 172.40.40.1 dev eth0 2>/dev/null || true
-docker exec clab-folded-clos-host1 ip route add default via 192.168.1.1 dev eth1 2>/dev/null || true
-
-# Host2 configuration (connected to Q3D-2 and Q3D-3)
-docker exec clab-folded-clos-host2 ip addr add 192.168.2.10/24 dev eth1 2>/dev/null || true
-docker exec clab-folded-clos-host2 ip route del default via 172.40.40.1 dev eth0 2>/dev/null || true
-docker exec clab-folded-clos-host2 ip route add default via 192.168.2.1 dev eth1 2>/dev/null || true
-
-echo -e "${GREEN}✓ Host IP addresses and default routes configured${NC}"
-echo ""
-
-# Step 4: Enable bgpd on all containers
-echo -e "${BLUE}Step 4: Enabling bgpd daemon on all containers...${NC}"
+# Step 3: Enable bgpd on all containers
+echo -e "${BLUE}Step 3: Enabling bgpd daemon on all containers...${NC}"
 echo "--------------------------------------------------"
 
 for container in "${!CONTAINERS[@]}"; do
@@ -294,8 +258,8 @@ done
 echo -e "${GREEN}✓ bgpd enabled on all containers${NC}"
 echo ""
 
-# Step 5: Configure BGP on spine routers
-echo -e "${BLUE}Step 5: Configuring BGP on spine routers...${NC}"
+# Step 4: Configure BGP on spine routers
+echo -e "${BLUE}Step 4: Configuring BGP on spine routers...${NC}"
 echo "--------------------------------------------"
 
 configure_spine_bgp "clab-folded-clos-URH-TH5-0" "65000"
@@ -304,8 +268,8 @@ configure_spine_bgp "clab-folded-clos-URH-TH5-1" "65000"
 echo -e "${GREEN}✓ BGP configured on spine routers${NC}"
 echo ""
 
-# Step 6: Configure BGP on leaf routers
-echo -e "${BLUE}Step 6: Configuring BGP on leaf routers...${NC}"
+# Step 5: Configure BGP on leaf routers
+echo -e "${BLUE}Step 5: Configuring BGP on leaf routers...${NC}"
 echo "-------------------------------------------"
 
 configure_leaf_bgp "clab-folded-clos-LRH-Q3D-0" "65100"
@@ -316,24 +280,24 @@ configure_leaf_bgp "clab-folded-clos-LRH-Q3D-3" "65103"
 echo -e "${GREEN}✓ BGP configured on leaf routers${NC}"
 echo ""
 
-# Step 6.5: Wait for BGP configuration to be applied
-echo -e "${BLUE}Step 6.5: Waiting for BGP configuration to be applied...${NC}"
+# Step 5.5: Wait for BGP configuration to be applied
+echo -e "${BLUE}Step 5.5: Waiting for BGP configuration to be applied...${NC}"
 echo "-----------------------------------------------------------"
 echo "Waiting 5 seconds for vtysh commands to complete..."
 sleep 5
 echo -e "${GREEN}✓ BGP configuration applied${NC}"
 echo ""
 
-# Step 7: Wait for BGP sessions to establish and exchange routes
-echo -e "${BLUE}Step 7: Waiting for BGP sessions to establish and exchange routes...${NC}"
+# Step 6: Wait for BGP sessions to establish and exchange routes
+echo -e "${BLUE}Step 6: Waiting for BGP sessions to establish and exchange routes...${NC}"
 echo "----------------------------------------------------------------------"
 echo "Waiting 30 seconds for BGP convergence..."
 sleep 30
 echo -e "${GREEN}✓ BGP convergence complete${NC}"
 echo ""
 
-# Step 8: Verify BGP status
-echo -e "${BLUE}Step 8: Verifying BGP configuration...${NC}"
+# Step 7: Verify BGP status
+echo -e "${BLUE}Step 7: Verifying BGP configuration...${NC}"
 echo "---------------------------------------"
 
 for container in "${!CONTAINERS[@]}"; do
@@ -342,8 +306,8 @@ for container in "${!CONTAINERS[@]}"; do
     echo ""
 done
 
-# Step 9: Check connectivity
-echo -e "${BLUE}Step 9: Testing connectivity...${NC}"
+# Step 8: Check connectivity
+echo -e "${BLUE}Step 8: Testing leaf-to-leaf connectivity...${NC}"
 echo "--------------------------------"
 
 echo "Testing Leaf 0 -> Leaf 1 connectivity..."
@@ -352,18 +316,6 @@ echo ""
 
 echo "Testing Leaf 0 -> Leaf 2 connectivity..."
 docker exec clab-folded-clos-LRH-Q3D-0 ping -c 2 10.0.2.1 2>/dev/null || echo "Connectivity test in progress..."
-echo ""
-
-# Step 10: Test host-to-host connectivity
-echo -e "${BLUE}Step 10: Testing host-to-host connectivity...${NC}"
-echo "---------------------------------------------"
-
-echo "Testing host1 (192.168.1.10) -> host2 (192.168.2.10) connectivity..."
-docker exec clab-folded-clos-host1 ping -c 3 192.168.2.10 2>/dev/null 
-echo ""
-
-echo "Testing host2 (192.168.2.10) -> host1 (192.168.1.10) connectivity..."
-docker exec clab-folded-clos-host2 ping -c 3 192.168.1.10 2>/dev/null
 echo ""
 
 echo "=========================================="
