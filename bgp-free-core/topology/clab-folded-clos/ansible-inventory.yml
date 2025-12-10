@@ -1,0 +1,27 @@
+all:
+  vars:
+    # The generated inventory is assumed to be used from the clab host.
+    # Hence no http proxy should be used. Therefore we make sure the http
+    # module does not attempt using any global http proxy.
+    ansible_httpapi_use_proxy: false
+  children:
+    linux:
+      hosts:
+        clab-folded-clos-host1:
+          ansible_host: 172.40.40.9
+        clab-folded-clos-host2:
+          ansible_host: 172.40.40.7
+    sonic-vs:
+      hosts:
+        clab-folded-clos-LRH-Q3D-0:
+          ansible_host: 172.40.40.6
+        clab-folded-clos-LRH-Q3D-1:
+          ansible_host: 172.40.40.3
+        clab-folded-clos-LRH-Q3D-2:
+          ansible_host: 172.40.40.4
+        clab-folded-clos-LRH-Q3D-3:
+          ansible_host: 172.40.40.2
+        clab-folded-clos-URH-TH5-0:
+          ansible_host: 172.40.40.8
+        clab-folded-clos-URH-TH5-1:
+          ansible_host: 172.40.40.5
