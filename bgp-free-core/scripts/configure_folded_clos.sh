@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Script to configure Folded CLOS SONiC topology
 # 4 Leaf nodes (LRH-Q3D-0 to LRH-Q3D-3) connected to 2 Spine nodes (URH-TH5-0, URH-TH5-1)
-
-set -e
+# VXLAN tunnel between Leaf 0 and Leaf 3
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -12,14 +11,10 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Container names and their AS numbers
-declare -A CONTAINERS
-CONTAINERS["clab-folded-clos-LRH-Q3D-0"]="65100"
-CONTAINERS["clab-folded-clos-LRH-Q3D-1"]="65101"
-CONTAINERS["clab-folded-clos-LRH-Q3D-2"]="65102"
-CONTAINERS["clab-folded-clos-LRH-Q3D-3"]="65103"
-CONTAINERS["clab-folded-clos-URH-TH5-0"]="65000"
-CONTAINERS["clab-folded-clos-URH-TH5-1"]="65000"
+# Container lists
+LEAF_CONTAINERS=("clab-folded-clos-LRH-Q3D-0" "clab-folded-clos-LRH-Q3D-1" "clab-folded-clos-LRH-Q3D-2" "clab-folded-clos-LRH-Q3D-3")
+SPINE_CONTAINERS=("clab-folded-clos-URH-TH5-0" "clab-folded-clos-URH-TH5-1")
+ALL_CONTAINERS=("${LEAF_CONTAINERS[@]}" "${SPINE_CONTAINERS[@]}")
 
 # Function to configure BGP on spine
 configure_spine_bgp() {
@@ -69,9 +64,7 @@ configure_spine_bgp() {
         -c "exit-address-family" \
         -c "exit" 2>&1 | grep -v "Unknown command" || true
 
-    # Save configuration (try both commands)
-    docker exec $container_name vtysh -c "write memory" 2>/dev/null || \
-    docker exec $container_name vtysh -c "write" 2>/dev/null || true
+    docker exec $container_name vtysh -c "write memory" 2>&1 | grep -v "Unknown command" || true
 
     echo "✓ Successfully configured $container_name"
 }
@@ -83,6 +76,8 @@ configure_leaf_bgp() {
     local router_id=""
     local neighbor1=""
     local neighbor2=""
+    local neighbor1_desc=""
+    local neighbor2_desc=""
 
     if [ "$container_name" == "clab-folded-clos-LRH-Q3D-0" ]; then
         router_id="10.10.10.10"
@@ -129,9 +124,7 @@ configure_leaf_bgp() {
         -c "exit-address-family" \
         -c "exit" 2>&1 | grep -v "Unknown command" || true
 
-    # Save configuration (try both commands)
-    docker exec $container_name vtysh -c "write memory" 2>/dev/null || \
-    docker exec $container_name vtysh -c "write" 2>/dev/null || true
+    docker exec $container_name vtysh -c "write memory" 2>&1 | grep -v "Unknown command" || true
 
     echo "✓ Successfully configured $container_name"
 }
@@ -147,7 +140,7 @@ echo -e "${BLUE}Step 0: Checking Docker connectivity...${NC}"
 echo "-------------------------------------------"
 
 all_running=true
-for container in "${!CONTAINERS[@]}"; do
+for container in "${ALL_CONTAINERS[@]}"; do
     if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
         echo -e "  ${GREEN}✓${NC} $container is running"
     else
@@ -175,13 +168,15 @@ for i in 0 1; do
     done
 done
 
-# Leaf nodes (eth1-eth4 for 2 spine connections + 2 VXLAN tunnel connections)
+# Leaf nodes (eth1-eth2 for 2 spine connections)
 for i in 0 1 2 3; do
     docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth1 up
     docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth2 up
-    docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth3 up
-    docker exec clab-folded-clos-LRH-Q3D-$i ip link set eth4 up
 done
+
+# Leaf 0 and Leaf 3 (eth3 for VXLAN tunnel connection)
+docker exec clab-folded-clos-LRH-Q3D-0 ip link set eth3 up
+docker exec clab-folded-clos-LRH-Q3D-3 ip link set eth3 up
 
 echo -e "${GREEN}✓ All eth interfaces are up${NC}"
 sleep 2
@@ -213,28 +208,28 @@ docker exec clab-folded-clos-URH-TH5-1 config interface ip add Ethernet12 10.0.3
 docker exec clab-folded-clos-URH-TH5-1 config interface startup Ethernet12 2>/dev/null || true
 docker exec clab-folded-clos-URH-TH5-1 config interface ip add Loopback0 2.2.2.2/32 2>/dev/null || true
 
-# Leaf 0 interfaces (VXLAN tunnels via eth3 and eth4)
+# Leaf 0 interfaces
 docker exec clab-folded-clos-LRH-Q3D-0 config interface ip add Ethernet0 10.0.0.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface ip add Ethernet4 10.0.0.3/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface startup Ethernet4 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-0 config interface ip add Loopback0 10.10.10.10/32 2>/dev/null || true
 
-# Leaf 1 interfaces (VXLAN tunnels via eth3 and eth4)
+# Leaf 1 interfaces
 docker exec clab-folded-clos-LRH-Q3D-1 config interface ip add Ethernet0 10.0.1.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface ip add Ethernet4 10.0.1.3/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface startup Ethernet4 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-1 config interface ip add Loopback0 11.11.11.11/32 2>/dev/null || true
 
-# Leaf 2 interfaces (VXLAN tunnels via eth3 and eth4)
+# Leaf 2 interfaces
 docker exec clab-folded-clos-LRH-Q3D-2 config interface ip add Ethernet0 10.0.2.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface ip add Ethernet4 10.0.2.3/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface startup Ethernet4 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-2 config interface ip add Loopback0 12.12.12.12/32 2>/dev/null || true
 
-# Leaf 3 interfaces (VXLAN tunnels via eth3 and eth4)
+# Leaf 3 interfaces
 docker exec clab-folded-clos-LRH-Q3D-3 config interface ip add Ethernet0 10.0.3.1/31 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-3 config interface startup Ethernet0 2>/dev/null || true
 docker exec clab-folded-clos-LRH-Q3D-3 config interface ip add Ethernet4 10.0.3.3/31 2>/dev/null || true
@@ -249,7 +244,7 @@ echo ""
 echo -e "${BLUE}Step 3: Enabling bgpd daemon on all containers...${NC}"
 echo "--------------------------------------------------"
 
-for container in "${!CONTAINERS[@]}"; do
+for container in "${ALL_CONTAINERS[@]}"; do
     docker exec $container sed -i 's/bgpd=no/bgpd=yes/' /etc/frr/daemons
     docker exec $container service frr restart 2>&1 | grep -v "Cannot stop watchfrr" || true
     sleep 2
@@ -280,14 +275,6 @@ configure_leaf_bgp "clab-folded-clos-LRH-Q3D-3" "65103"
 echo -e "${GREEN}✓ BGP configured on leaf routers${NC}"
 echo ""
 
-# Step 5.5: Wait for BGP configuration to be applied
-echo -e "${BLUE}Step 5.5: Waiting for BGP configuration to be applied...${NC}"
-echo "-----------------------------------------------------------"
-echo "Waiting 5 seconds for vtysh commands to complete..."
-sleep 5
-echo -e "${GREEN}✓ BGP configuration applied${NC}"
-echo ""
-
 # Step 6: Wait for BGP sessions to establish and exchange routes
 echo -e "${BLUE}Step 6: Waiting for BGP sessions to establish and exchange routes...${NC}"
 echo "----------------------------------------------------------------------"
@@ -300,13 +287,13 @@ echo ""
 echo -e "${BLUE}Step 7: Verifying BGP configuration...${NC}"
 echo "---------------------------------------"
 
-for container in "${!CONTAINERS[@]}"; do
+for container in "${ALL_CONTAINERS[@]}"; do
     echo "=== $container BGP Summary ==="
     docker exec $container vtysh -c "show ip bgp summary" 2>/dev/null || echo "BGP not ready yet"
     echo ""
 done
 
-# Step 8: Check connectivity
+# Step 8: Test leaf-to-leaf connectivity
 echo -e "${BLUE}Step 8: Testing leaf-to-leaf connectivity...${NC}"
 echo "--------------------------------"
 
@@ -336,4 +323,3 @@ echo "  - Enter vtysh:         docker exec -it <container> vtysh"
 echo ""
 echo "Powered by Nexthop.AI"
 echo ""
-

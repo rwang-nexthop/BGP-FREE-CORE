@@ -2,12 +2,11 @@
 
 ## Overview
 
-A folded CLOS network topology with 6 SONiC nodes and 2 Linux host nodes for testing:
+A folded CLOS network topology with 6 SONiC nodes for testing:
 - **4 Leaf nodes** (Level 0): LRH-Q3D-0, LRH-Q3D-1, LRH-Q3D-2, LRH-Q3D-3
 - **2 Spine nodes** (Level 1): URH-TH5-0, URH-TH5-1
-- **2 Host nodes**: host1 (connected to Leaf 0 & 1), host2 (connected to Leaf 2 & 3)
 
-Each leaf is connected to both spines (full mesh), creating a folded CLOS architecture. Host nodes provide endpoints for testing IP connectivity and VXLAN tunneling.
+Each leaf is connected to both spines (full mesh), creating a folded CLOS architecture. A VXLAN tunnel is configured between Leaf 0 and Leaf 3 for Layer 2 overlay testing.
 
 ## Topology Diagram
 
@@ -18,27 +17,27 @@ Each leaf is connected to both spines (full mesh), creating a folded CLOS archit
                                      │                   │        │                   │       │                   │                                   
                                      │  Leaf 0           │        │  Spine 0          │       │  Leaf 2           │                                   
                                      │                   │        │                   │       │                   │                                   
-       ┌───────────────────┐         │  10.10.10.10      │        │  1.1.1.1          │       │  12.12.12.12      │      ┌───────────────────┐        
-       │                   ◄─────────┼                   │        │                   │       │                   │      │                   │        
-       │   Host 1          │         └──────────────────◄┴──┐     ├───────────────────┤     ┌─►───────────────────┴──────►   Host 2          │        
-       │                   │                                │     │                   │     │                            │                   │        
-  ┌────┼   192.168.1.10    │                                │ ┌───┘                   └───┐ │                            │   192.168.2.10    ◄─────┐  
-  │    │                   │                                │ │                           │ │                            │                   │     │  
-  │    │   10.0.100.1      │         ┌───────────────────◄──┼─┘   ┌───────────────────┐   └─┼─►───────────────────┐      │   10.0.100.2      │     │  
-  │    │                   ◄─────────┼                   │  │     │  URH-TH5-1        │     │ │                   │      │                   │     │  
-  │    └───────────────────┘         │  LRH-Q3D-1        │  └─────┼                   ┼─────┘ │  LRH-Q3D-3        ┼──────►───────────────────┘     │  
-  │                                  │                   │        │  Spine 1          │       │                   │                                │  
-  │                                  │  Leaf 1           │        │                   │       │  Leaf 3           │                                │  
-  │                                  │                   │        │  2.2.2.2          │       │                   │                                │  
-  │                                  │  11.11.11.11      │        │                   │       │  13.13.13.13      │                                │  
-  │                                  │                   │        │                   │       │                   │                                │  
-  │                                  └───────────────────◄────────┴───────────────────┴───────►───────────────────┘                                │  
-  │                                                                                                                                                │  
-  │                                                                                                                                                │  
-  │                                                                                                                                                │  
-  │                                                                                                                                                │  
-  │                                                                   VXLAN 100                                                                    │  
-  └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘  
+                                ┌─►  │  10.10.10.10      │        │  1.1.1.1          │       │  12.12.12.12      │         
+                                │    │                   │        │                   │       │                   │ 
+                                │    └──────────────────◄┴──┐     ├───────────────────┤     ┌─►───────────────────┴
+                                │                           │     │                   │     │                      
+                                │                           │ ┌───┘                   └───┐ │                      
+                                │                           │ │                           │ │                      
+                                │     ───────────────────◄──┼─┘   ┌───────────────────┐   └─┼─►───────────────────┐
+                                │    │                   │  │     │  URH-TH5-1        │     │ │                   │
+                                │    │  LRH-Q3D-1        │  └─────┼                   ┼─────┘ │  LRH-Q3D-3        │
+                                │    │                   │        │  Spine 1          │       │                   │
+                                │    │  Leaf 1           │        │                   │       │  Leaf 3           │
+                                │    │                   │        │  2.2.2.2          │       │                   │
+                                │    │  11.11.11.11      │        │                   │       │  13.13.13.13      │
+                                │    │                   │        │                   │       │                   │
+                                │    └───────────────────◄────────┴───────────────────┴───────►───────────────────┘
+                                │                                                                                 │ 
+                                │                                                                                 │ 
+                                │                                                                                 │ 
+                                │                                                                                 │ 
+                                │                                       VXLAN 100                                 │  
+                                └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## IP Addressing
@@ -62,22 +61,15 @@ Each leaf is connected to both spines (full mesh), creating a folded CLOS archit
 - LRH-Q3D-2: 12.12.12.12/32
 - LRH-Q3D-3: 13.13.13.13/32
 
-### Host Addresses
-- **host1** (connected to Leaf 0 & 1):
-  - eth1: 192.168.1.10/24 (network connectivity)
-  - eth2: 10.0.100.1/24 (VXLAN bridge)
-  - Default route: via 192.168.1.1 (Leaf 0)
-
-- **host2** (connected to Leaf 2 & 3):
-  - eth1: 192.168.2.10/24 (network connectivity)
-  - eth2: 10.0.100.2/24 (VXLAN bridge)
-  - Default route: via 192.168.2.1 (Leaf 2)
-
-### Leaf-to-Host Links
-- Leaf 0 (Ethernet8): 192.168.1.1/24 ↔ host1 eth1
-- Leaf 1 (Ethernet8): 192.168.1.1/24 ↔ host1 eth2
-- Leaf 2 (Ethernet8): 192.168.2.1/24 ↔ host2 eth1
-- Leaf 3 (Ethernet8): 192.168.2.1/24 ↔ host2 eth2
+### VXLAN Tunnel (Leaf 0 ↔ Leaf 3)
+- **VNI**: 100
+- **Leaf 0 VTEP IP**: 10.0.0.1 (local)
+- **Leaf 3 VTEP IP**: 10.0.3.1 (remote)
+- **Bridge Network**: 10.0.100.0/24
+  - Leaf 0 Bridge IP: 10.0.100.0/24
+  - Leaf 3 Bridge IP: 10.0.100.3/24
+- **Physical Interface**: eth3 on both Leaf 0 and Leaf 3
+- **UDP Port**: 4789
 
 ## BGP Configuration
 
@@ -108,18 +100,16 @@ cd ~/Python/Projects/bgp-free-core/scripts
 
 The script will:
 1. Check Docker connectivity
-2. Bring up eth interfaces
+2. Bring up eth interfaces (eth1, eth2 for spine connections; eth3 for VXLAN on Leaf 0 & 3)
 3. Configure IP addresses on all nodes
-4. Configure host IP addresses and default routes
-5. Enable BGP daemon on all containers
-6. Configure BGP on spine routers
-7. Configure BGP on leaf routers
-8. Wait for BGP configuration to be applied (5 seconds)
-9. Wait for BGP convergence (30 seconds) - **allows full route distribution**
-10. Verify BGP status on all nodes
-11. Test connectivity between nodes and hosts
+4. Enable BGP daemon on all containers
+5. Configure BGP on spine routers
+6. Configure BGP on leaf routers
+7. Wait for BGP convergence (30 seconds) - **allows full route distribution**
+8. Verify BGP status on all nodes
+9. Test leaf-to-leaf connectivity
 
-**Note:** The script now runs successfully in a single execution. BGP routes are fully distributed after the 30-second convergence wait.
+**Note:** The script runs successfully in a single execution. BGP routes are fully distributed after the 30-second convergence wait.
 
 ## Verification
 
@@ -135,7 +125,7 @@ This comprehensive test script verifies:
 - Loopback connectivity via BGP routes
 - Routing tables on all nodes
 - BGP routes learned
-- Host-to-host connectivity
+- Leaf-to-leaf connectivity
 
 ### Manual BGP Verification
 ```bash
@@ -154,20 +144,20 @@ docker exec clab-folded-clos-LRH-Q3D-0 vtysh -c "show ip bgp"
 
 ### Manual Connectivity Tests
 ```bash
-# Test leaf-to-leaf connectivity
+# Test leaf-to-leaf connectivity via BGP routes
 docker exec clab-folded-clos-LRH-Q3D-0 ping 10.0.1.1
 docker exec clab-folded-clos-LRH-Q3D-0 ping 10.0.2.1
+docker exec clab-folded-clos-LRH-Q3D-0 ping 13.13.13.13
 
-# Test host-to-host connectivity
-docker exec clab-folded-clos-host1 ping 192.168.2.10
-docker exec clab-folded-clos-host2 ping 192.168.1.10
+# Test VXLAN tunnel connectivity (bridge IPs)
+docker exec clab-folded-clos-LRH-Q3D-0 ping 10.0.100.3
 ```
 
 ### VXLAN Testing
 ```bash
 cd ~/Python/Projects/bgp-free-core/scripts
-./VXLAN_setup.sh    # Setup VXLAN tunnel
-./VXLAN_proof.sh    # Verify VXLAN connectivity
+./VXLAN_setup.sh    # Setup VXLAN tunnel between Leaf 0 and Leaf 3
+./VXLAN_proof.sh    # Verify VXLAN connectivity with 16 comprehensive tests
 ```
 
 ## Cleanup
@@ -180,13 +170,13 @@ containerlab destroy -t folded-clos.clab.yml
 ## Files
 
 ### Topology
-- `topology/folded-clos.clab.yml` - Containerlab topology definition with 6 SONiC nodes and 2 host nodes
+- `topology/folded-clos.clab.yml` - Containerlab topology definition with 6 SONiC nodes and VXLAN tunnel between Leaf 0 and Leaf 3
 
 ### Configuration & Testing Scripts
 - `scripts/configure_folded_clos.sh` - Complete BGP and IP configuration (runs in single execution)
 - `scripts/test_connectivity.sh` - Comprehensive connectivity testing
-- `scripts/VXLAN_setup.sh` - VXLAN tunnel configuration between hosts
-- `scripts/VXLAN_proof.sh` - VXLAN tunnel verification with 20 comprehensive tests
+- `scripts/VXLAN_setup.sh` - VXLAN tunnel configuration between Leaf 0 and Leaf 3
+- `scripts/VXLAN_proof.sh` - VXLAN tunnel verification with 16 comprehensive tests
 
 ### Documentation
 - `README.md` - This file (main documentation)
@@ -200,17 +190,19 @@ containerlab destroy -t folded-clos.clab.yml
 - ✅ Proper timing for route convergence (30-second wait)
 - ✅ BGP neighbor descriptions for easy identification
 - ✅ Single-run execution (no need to run twice)
+- ✅ Dual-spine redundancy with equal-cost multipath routing
 
-### Host Connectivity
-- ✅ Host-to-host IP connectivity through folded CLOS network
-- ✅ Redundant connections (each host connected to 2 leaves)
-- ✅ Default route configuration for proper routing
+### Leaf-to-Leaf Connectivity
+- ✅ Full mesh connectivity between all leaf nodes via spines
+- ✅ BGP-based routing with loopback reachability
+- ✅ Automatic failover between spines
 
 ### VXLAN Overlay
-- ✅ Point-to-point VXLAN tunnel between hosts
-- ✅ Separate interfaces for network and VXLAN traffic
-- ✅ Comprehensive verification tests
+- ✅ Point-to-point VXLAN tunnel between Leaf 0 and Leaf 3
+- ✅ Separate interfaces for underlay (eth1, eth2) and overlay (eth3) traffic
+- ✅ 16 comprehensive verification tests
 - ✅ MAC learning and FDB verification
+- ✅ Layer 2 bridge connectivity across VXLAN tunnel
 
 ## Troubleshooting
 
@@ -218,16 +210,19 @@ containerlab destroy -t folded-clos.clab.yml
 - Ensure `configure_folded_clos.sh` completes fully (takes ~2 minutes)
 - Check BGP status: `docker exec clab-folded-clos-URH-TH5-0 vtysh -c "show ip bgp summary"`
 - Verify FRR daemon is running: `docker exec clab-folded-clos-URH-TH5-0 service frr status`
+- Check BGP neighbors are in Established state: `docker exec clab-folded-clos-LRH-Q3D-0 vtysh -c "show ip bgp neighbors"`
 
-### Host Connectivity Issues
-- Verify host IPs are configured: `docker exec clab-folded-clos-host1 ip addr show`
-- Check default routes: `docker exec clab-folded-clos-host1 ip route show`
-- Test leaf connectivity: `docker exec clab-folded-clos-host1 ping 192.168.1.1`
+### Leaf-to-Leaf Connectivity Issues
+- Verify loopback IPs are configured: `docker exec clab-folded-clos-LRH-Q3D-0 ip addr show Loopback0`
+- Check routing table: `docker exec clab-folded-clos-LRH-Q3D-0 ip route show`
+- Test spine connectivity: `docker exec clab-folded-clos-LRH-Q3D-0 ping 10.0.0.0`
 
 ### VXLAN Tunnel Not Working
-- Verify underlay connectivity: `docker exec clab-folded-clos-host1 ping 192.168.2.10`
-- Check VXLAN interface: `docker exec clab-folded-clos-host1 ip link show vxlan100`
-- Verify bridge configuration: `docker exec clab-folded-clos-host1 brctl show br100`
+- Verify VXLAN interface is UP: `docker exec clab-folded-clos-LRH-Q3D-0 ip link show vxlan100`
+- Check bridge configuration: `docker exec clab-folded-clos-LRH-Q3D-0 ip addr show br100`
+- Verify eth3 is UP: `docker exec clab-folded-clos-LRH-Q3D-0 ip link show eth3`
+- Test VXLAN connectivity: `docker exec clab-folded-clos-LRH-Q3D-0 ping 10.0.100.3`
+- Check FDB entries: `docker exec clab-folded-clos-LRH-Q3D-0 bridge fdb show dev vxlan100`
 
 See `TEST_COMMANDS.md` for more detailed troubleshooting steps.
 
